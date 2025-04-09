@@ -2,27 +2,66 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Blank</ion-title>
+        <ion-title>Els amics de Yuriy</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
+          <ion-title size="large">Els amics de Yuriy</ion-title>
         </ion-toolbar>
       </ion-header>
 
-      <div id="container">
-        <strong>Ready to create an app?</strong>
-        <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-      </div>
+      <ion-list>
+       <CharacterListItem
+         v-for="character in characters"
+         :key="character.id"
+         :character="character"
+      />
+     </ion-list>
+
+      <ion-refresher slot="fixed" @ionRefresh="refresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+     </ion-refresher> 
+
     </ion-content>
+
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonList, IonRefresher, IonRefresherContent } from '@ionic/vue';
+import CharacterListItem from '@/components/CharacterListItem.vue';
+import { ref, onMounted } from 'vue';
+
+interface Character {
+  id: number;
+  name: string;
+  sate: string;
+  image: string;
+}
+
+const characters = ref<Character[]>([]);
+const fetchCharacters = async () => {
+ try {
+   const response = await fetch('https://rickandmortyapi.com/api/character');
+   const data = await response.json();
+   characters.value = data.results; // Asignamos los resultados a la lista
+ } catch (error) {
+   console.error('Error fetching characters:', error);
+ }
+};
+onMounted(() => {
+  fetchCharacters(); // Llamamos a la función al montar el componente
+});
+const refresh = (ev: CustomEvent) => {
+ fetchCharacters().then(() => {
+   ev.detail.complete(); // Finalizamos el refresher
+ });
+};
+
+
 </script>
 
 <style scoped>
